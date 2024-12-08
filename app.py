@@ -126,6 +126,56 @@ def get_all_transactions():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+# API endpoint to fetch a single transaction by ID
+@app.route('/api/transaction/<transaction_id>', methods=['GET'])
+def get_transaction_by_id(transaction_id):
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        # Query to fetch a transaction by its ID
+        cursor.execute("SELECT * FROM transactions WHERE transaction_id = %s", (transaction_id,))
+        transaction = cursor.fetchone()
+
+        cursor.close()
+        conn.close()
+
+        if transaction:
+            return jsonify(transaction), 200
+        else:
+            return jsonify({"error": "Transaction not found"}), 404
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# API endpoint to fetch transactions within a date range
+@app.route('/api/transactions/range', methods=['GET'])
+def get_transactions_by_range():
+    start_date = request.args.get('start_date')
+    end_date = request.args.get('end_date')
+
+    if not start_date or not end_date:
+        return jsonify({"error": "Both start_date and end_date are required"}), 400
+
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        # Query to fetch transactions within the date range
+        cursor.execute(
+            "SELECT * FROM transactions WHERE date BETWEEN %s AND %s",
+            (start_date, end_date)
+        )
+        transactions = cursor.fetchall()
+
+        cursor.close()
+        conn.close()
+
+        return jsonify(transactions), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 @app.route('/api/generate/<int:num_transactions>', methods=['GET'])
 def generate_data(num_transactions):
     data = [generate_random_transaction() for _ in range(num_transactions)]
