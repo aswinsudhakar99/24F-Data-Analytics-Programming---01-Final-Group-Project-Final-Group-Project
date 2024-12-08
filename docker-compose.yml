@@ -1,0 +1,19 @@
+version: "3.8"
+
+services:
+  mysql:
+    image: mysql:8.0 # You can specify any version of MySQL (e.g., 8.0, 5.7, etc.)
+    container_name: mysql-container
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword # Root password for MySQL
+      MYSQL_DATABASE: dataset_db # Default database to be created
+      MYSQL_USER: flask_user # User to access the database
+      MYSQL_PASSWORD: flask_password # Password for the flask_user
+    ports:
+      - "3306:3306" # Expose MySQL on port 3306
+    volumes:
+      - mysql_data:/var/lib/mysql # Persist MySQL data between container restarts
+
+volumes:
+  mysql_data:
+    driver: local

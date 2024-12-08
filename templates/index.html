@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Transaction Upload and Display</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+  <script type="text/javascript">
+    // Load the Google Charts library
+    google.charts.load('current', {'packages': ['corechart', 'bar']});
+    google.charts.setOnLoadCallback(drawCharts);
+
+    // Fetch transactions data and draw charts
+    function drawCharts() {
+      fetch('/api/transactions')
+        .then(response => response.json())
+        .then(data => {
+          // Call functions to draw different types of charts
+          drawBarChart(data);
+          drawPieChart(data);
+          drawStackedBarChart(data);
+        })
+        .catch(error => console.error('Error fetching transaction data:', error));
+    }
+
+    // Draw a bar chart for transaction amounts by item
+    function drawBarChart(data) {
+      const itemAmounts = {};
+
+      // Aggregate amounts by item
+      data.forEach(transaction => {
+        if (!itemAmounts[transaction.item]) {
+          itemAmounts[transaction.item] = 0;
+        }
+        console.log(parseFloat(transaction.amount))
+        itemAmounts[transaction.item] += parseFloat(transaction.amount);
+      });
+
+      console.log(itemAmounts)
+
+      // Prepare the data for the bar chart
+      const chartData = [['Item', 'Amount']];
+      for (const [item, amount] of Object.entries(itemAmounts)) {
+        chartData.push([item, amount]);
+      }
+
+      // Create the chart
+      const dataTable = google.visualization.arrayToDataTable(chartData);
+      const options = {
+        title: 'Amount Spent per Item',
+        chartArea: {width: '50%'},
+        hAxis: {title: 'Amount', minValue: 0},
+        vAxis: {title: 'Item'}
+      };
+      const chart = new google.visualization.BarChart(document.getElementById('bar-chart'));
+      chart.draw(dataTable, options);
+    }
+
+    // Draw a pie chart for transaction distribution by location
+    function drawPieChart(data) {
+      const locationCounts = {};
+
+      // Aggregate transactions by location
+      data.forEach(transaction => {
+        if (!locationCounts[transaction.location]) {
+          locationCounts[transaction.location] = 0;
+        }
+        locationCounts[transaction.location] += 1;
+      });
+
+      // Prepare the data for the pie chart
+      const chartData = [['Location', 'Count']];
+      for (const [location, count] of Object.entries(locationCounts)) {
+        chartData.push([location, count]);
+      }
+
+      // Create the chart
+      const dataTable = google.visualization.arrayToDataTable(chartData);
+      const options = {
+        title: 'Transaction Distribution by Location'
+      };
+      const chart = new google.visualization.PieChart(document.getElementById('pie-chart'));
+      chart.draw(dataTable, options);
+    }
+
+    // Draw a stacked bar chart for amount spent per location per month
+    function drawStackedBarChart(data) {
+      const locationMonthData = {};
+
+      // Aggregate amounts by location and month
+      data.forEach(transaction => {
+        const date = new Date(transaction.date);
+        const month = date.toLocaleString('default', {month: 'short'}) + ' ' + date.getFullYear();
+        const location = transaction.location;
+        const amount = parseFloat(transaction.amount);
+
+        if (!locationMonthData[location]) {
+          locationMonthData[location] = {};
+        }
+        if (!locationMonthData[location][month]) {
+          locationMonthData[location][month] = 0;
+        }
+
+        locationMonthData[location][month] += amount;
+      });
+
+      // Prepare data for the stacked bar chart
+      const chartData = [['Month']];
+      const locations = Object.keys(locationMonthData);
+      const months = [];
+
+      // Collect unique months and add month as the first column
+      locations.forEach(location => {
+        Object.keys(locationMonthData[location]).forEach(month => {
+          if (!months.includes(month)) {
+            months.push(month);
+          }
+        });
+      });
+
+      // Add months as columns in the chart data
+      months.forEach(month => {
+        chartData[0].push(month);
+      });
+
+      // Add data for each location
+      locations.forEach(location => {
+        const row = [location];
+        months.forEach(month => {
+          row.push(locationMonthData[location][month] || 0);
+        });
+        chartData.push(row);
+      });
+
+      // Create the chart
+      const dataTable = google.visualization.arrayToDataTable(chartData);
+      const options = {
+        title: 'Amount Spent per Location per Month',
+        isStacked: true,
+        hAxis: {
+          title: 'Month',
+          minValue: 0
+        },
+        vAxis: {
+          title: 'Amount',
+          minValue: 0
+        }
+      };
+      const chart = new google.visualization.BarChart(document.getElementById('stacked-bar-chart'));
+      chart.draw(dataTable, options);
+    }
+  </script>
+</head>
+
+<body>
+  <div class="container">
+    <h1>Upload Dataset via URL</h1>
+    <form id="url-form">
+      <label for="url">Enter Dataset URL:</label>
+      <input type="url" id="url" name="url" required placeholder="https://example.com/dataset.csv">
+      <button type="submit">Upload Data</button>
+    </form>
+    <div id="response-message" class="response-message"></div>
+
+    <div class="container">
+      <h1>Transaction Visualizations</h1>
+
+      <!-- Display the bar chart for amount spent per item -->
+      <div id="bar-chart" style="width: 900px; height: 500px;"></div>
+
+      <!-- Display the pie chart for distribution of transactions by location -->
+      <div id="pie-chart" style="width: 900px; height: 500px;"></div>
+
+      <!-- Display the stacked bar chart for amount spent per location per month -->
+      <div id="stacked-bar-chart" style="width: 900px; height: 500px;"></div>
+    </div>
+
+    <h2>Transactions List</h2>
+
+    <!-- Transactions Table -->
+    <table border="1">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Transaction ID</th>
+          <th>Item</th>
+          <th>Amount</th>
+          <th>Location</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for transaction in transactions %}
+        <tr>
+          <td>{{ transaction['date'] }}</td>
+          <td>{{ transaction['transaction_id'] }}</td>
+          <td>{{ transaction['item'] }}</td>
+          <td>${{ transaction['amount'] }}</td>
+          <td>{{ transaction['location'] }}</td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="5">No transactions available</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <!-- Pagination Controls -->
+    <div class="pagination">
+      <!-- First and Previous buttons -->
+      {% if page > 1 %}
+      <a href="{{ url_for('index', page=1, per_page=per_page) }}">First</a>
+      <a href="{{ url_for('index', page=page-1, per_page=per_page) }}">Previous</a>
+      {% else %}
+      <span>First</span>
+      <span>Previous</span>
+      {% endif %}
+
+      <!-- Page Numbers -->
+      <span>Page {{ page }} of {{ total_pages }}</span>
+
+      <!-- Next and Last buttons -->
+      {% if page < total_pages %} <a href="{{ url_for('index', page=page+1, per_page=per_page) }}">Next</a>
+        <a href="{{ url_for('index', page=total_pages, per_page=per_page) }}">Last</a>
+        {% else %}
+        <span>Next</span>
+        <span>Last</span>
+        {% endif %}
+    </div>
+  </div>
+
+  <!-- JavaScript to handle the form submission as JSON -->
+  <script>
+    // JavaScript to handle form submission
+    document.getElementById("url-form").addEventListener("submit", function (event) {
+      event.preventDefault();
+
+      // Get the URL from the input field
+      const url = document.getElementById("url").value;
+
+      // Show a loading message while the request is being processed
+      const responseMessage = document.getElementById("response-message");
+      responseMessage.innerHTML = "<p>Processing...</p>";
+
+      // Send POST request to the Flask server
+      fetch("/upload", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({url: url})
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.message) {
+            responseMessage.innerHTML = `<p style="color: green;">${data.message}</p>`;
+          } else if (data.error) {
+            responseMessage.innerHTML = `<p style="color: red;">Error: ${data.error}</p>`;
+          }
+        })
+        .catch(error => {
+          responseMessage.innerHTML = `<p style="color: red;">Error: ${error}</p>`;
+        });
+    });
+  </script>
+</body>
+
+</html>
