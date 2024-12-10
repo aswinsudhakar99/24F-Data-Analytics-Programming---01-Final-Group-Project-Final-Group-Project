@@ -1,7 +1,7 @@
+import os
 from flask import Flask, render_template, request, jsonify
-import pandas as pd
 import requests
-import psycopg2  # Changed from mysql.connector to psycopg2
+import psycopg2  # PostgreSQL connector
 from io import StringIO
 from faker import Faker
 import math
@@ -12,13 +12,19 @@ from datetime import datetime, timedelta
 app = Flask(__name__)
 fake = Faker()
 
-# PostgreSQL connection setup
+# PostgreSQL connection setup using environment variables
 def get_db_connection():
+    host = os.getenv("DB_HOST", "localhost")  # Default to 'localhost' if not set
+    user = os.getenv("DB_USER", "flask_user")  # Default user
+    password = os.getenv("DB_PASSWORD", "flask_password")  # Default password
+    dbname = os.getenv("DB_NAME", "dataset_db")  # Default database name
+    
+    # Connect to PostgreSQL using environment variables
     return psycopg2.connect(
-        host="localhost",  # Change if needed
-        user="flask_user",
-        password="flask_password",
-        dbname="dataset_db"  # PostgreSQL uses 'dbname' instead of 'database'
+        host=host,
+        user=user,
+        password=password,
+        dbname=dbname
     )
 
 # Serve the HTML form on the root URL
