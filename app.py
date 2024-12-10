@@ -209,4 +209,6 @@ def generate_random_transaction():
     return transaction
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5001)
+    # Read the port from the environment variable, default to 5001 if not set
+    port = int(os.getenv("PORT", 5001))
+    app.run(debug=True, port=port)
