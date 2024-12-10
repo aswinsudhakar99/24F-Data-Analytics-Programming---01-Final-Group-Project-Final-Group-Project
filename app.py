@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, jsonify
 import pandas as pd
 import requests
-import mysql.connector
+import psycopg2  # Changed from mysql.connector to psycopg2
 from io import StringIO
 from faker import Faker
 import math
@@ -12,13 +12,13 @@ from datetime import datetime, timedelta
 app = Flask(__name__)
 fake = Faker()
 
-# MySQL connection setup
+# PostgreSQL connection setup
 def get_db_connection():
-    return mysql.connector.connect(
+    return psycopg2.connect(
         host="localhost",  # Change if needed
         user="flask_user",
         password="flask_password",
-        database="dataset_db"
+        dbname="dataset_db"  # PostgreSQL uses 'dbname' instead of 'database'
     )
 
 # Serve the HTML form on the root URL
@@ -29,13 +29,13 @@ def index():
         page = int(request.args.get('page', 1))
         per_page = int(request.args.get('per_page', 10))
 
-        # Connect to MySQL
+        # Connect to PostgreSQL
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
 
         # Count the total number of records in the transactions table
         cursor.execute("SELECT COUNT(*) FROM transactions")
-        total_records = cursor.fetchone()['COUNT(*)']
+        total_records = cursor.fetchone()['count']  # Changed from 'COUNT(*)' to 'count'
 
         # Calculate total pages
         total_pages = math.ceil(total_records / per_page)
@@ -84,11 +84,11 @@ def upload_data():
         # Step 2: Load the JSON data
         data = response.json()
 
-        # Step 3: Write data into MySQL
+        # Step 3: Write data into PostgreSQL
         conn = get_db_connection()
         cursor = conn.cursor()
 
-        # Iterate over the incoming JSON data and insert into MySQL
+        # Iterate over the incoming JSON data and insert into PostgreSQL
         for transaction in data:
             cursor.execute(
                 "INSERT INTO transactions (date, transaction_id, item, amount, location) "
@@ -201,5 +201,6 @@ def generate_random_transaction():
     }
 
     return transaction
+
 if __name__ == "__main__":
     app.run(debug=True, port=5001)
