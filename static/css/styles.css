@@ -6,45 +6,46 @@ body {
     background-color: #f4f4f9;
     margin: 0;
     padding: 0;
-}
-
-/* Center the form on the page */
-.container {
+  }
+  
+  /* Center the form on the page */
+  .container {
     max-width: 1000px;
     margin: 0 auto;
     padding: 30px;
+    margin-top: 60px;
     background-color: #fff;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     text-align: center;
-}
-
-h1 {
+  }
+  
+  h1 {
     color: #333;
     font-size: 24px;
     margin-bottom: 20px;
-}
-
-/* Form styling */
-form {
+  }
+  
+  /* Form styling */
+  form {
     display: flex;
     flex-direction: column;
     gap: 15px;
-}
-
-input[type="url"] {
+  }
+  
+  input[type="url"] {
     padding: 10px;
     font-size: 16px;
     border: 1px solid #ccc;
     border-radius: 4px;
     outline: none;
-}
-
-input[type="url"]:focus {
+  }
+  
+  input[type="url"]:focus {
     border-color: #007BFF;
-}
-
-button {
+  }
+  
+  button {
     padding: 10px 20px;
     font-size: 16px;
     background-color: #007BFF;
@@ -52,61 +53,91 @@ button {
     border: none;
     border-radius: 4px;
     cursor: pointer;
-}
-
-button:hover {
+  }
+  
+  button:hover {
     background-color: #0056b3;
-}
-
-/* Response message styling */
-.response-message {
+  }
+  
+  #delete-button {
+    background-color: #ff5555;
+  }
+  
+  /* Response message styling */
+  .response-message {
     margin-top: 20px;
     font-size: 16px;
-}
-
-/* Pagination styles */
-.pagination {
+  }
+  
+  /* Pagination styles */
+  .pagination {
     margin-top: 20px;
-}
-
-.pagination a, .pagination span {
+  }
+  
+  .pagination a,
+  .pagination span {
     display: inline-block;
     margin: 0 5px;
     padding: 5px 10px;
     border: 1px solid #ccc;
     color: #007bff;
     text-decoration: none;
-}
-
-.pagination a:hover {
+  }
+  
+  .pagination a:hover {
     background-color: #f0f0f0;
-}
-
-.pagination span {
+  }
+  
+  .pagination span {
     background-color: #f9f9f9;
     cursor: not-allowed;
     color: #888;
-}
-
-.pagination a {
+  }
+  
+  .pagination a {
     cursor: pointer;
-}
-
-table {
+  }
+  
+  table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 20px;
-}
-
-table, th, td {
+  }
+  
+  table,
+  th,
+  td {
     border: 1px solid #ddd;
-}
-
-th, td {
+  }
+  
+  th,
+  td {
     padding: 8px;
     text-align: left;
-}
-
-th {
+  }
+  
+  th {
     background-color: #f2f2f2;
-}
+  }
+  
+  /* Styling for header to display in a row */
+  .header-content {
+    display: flex;
+    align-items: center;
+    /* Vertically align the items */
+    gap: 10px;
+    justify-content: center;
+    /* Optional: Adds space between the logo and the title */
+  }
+  
+  .header-logo img {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .list-heading-container {
+    display: flex;
+    justify-content: space-between; /* Distribute space between the heading and button */
+    align-items: center; /* Vertically center the elements */
+    padding: 10px;
+  }  

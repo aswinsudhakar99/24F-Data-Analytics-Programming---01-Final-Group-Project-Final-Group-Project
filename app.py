@@ -54,7 +54,7 @@ def index():
 
         # Query the transactions table with LIMIT and OFFSET for pagination
         cursor.execute(
-            "SELECT * FROM transactions LIMIT %s OFFSET %s",
+            "SELECT * FROM transactions ORDER BY date LIMIT %s OFFSET %s",
             (per_page, offset)
         )
         transactions = cursor.fetchall()
@@ -125,7 +125,7 @@ def get_all_transactions():
         cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
         # Query to fetch all transactions from the database
-        cursor.execute("SELECT * FROM transactions")
+        cursor.execute("SELECT * FROM transactions ORDER BY date")
         transactions = cursor.fetchall()
 
         cursor.close()
@@ -133,6 +133,28 @@ def get_all_transactions():
 
         # Return the transactions as a JSON response
         return jsonify(transactions), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# New API endpoint to delete all transactions
+@app.route('/api/transactions/delete', methods=['GET'])
+def delete_all_transactions():
+    try:
+        conn = get_db_connection()
+
+        # Use RealDictCursor to fetch rows as dictionaries
+        cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
+        # Query to fetch all transactions from the database
+        cursor.execute("DELETE FROM transactions")
+        conn.commit()
+
+        cursor.close()
+        conn.close()
+
+        # Return the transactions as a JSON response
+        return "success", 200
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -178,7 +200,7 @@ def get_transactions_by_range():
 
         # Query to fetch transactions within the date range
         cursor.execute(
-            "SELECT * FROM transactions WHERE date BETWEEN %s AND %s",
+            "SELECT * FROM transactions WHERE date BETWEEN %s AND %s ORDER BY date",
             (start_date, end_date)
         )
         transactions = cursor.fetchall()

@@ -19,6 +19,7 @@
         .then(data => {
           // Call functions to draw different types of charts
           drawBarChart(data);
+          drawBarChart2(data);
           drawPieChart(data);
           drawStackedBarChart(data);
         })
@@ -55,6 +56,37 @@
         vAxis: {title: 'Item'}
       };
       const chart = new google.visualization.BarChart(document.getElementById('bar-chart'));
+      chart.draw(dataTable, options);
+    }
+
+    function drawBarChart2(data) {
+      const transactionFrequency = {};
+
+      // Aggregate amounts by item
+      data.forEach(transaction => {
+        date = new Date(transaction.date);
+        month = date.toLocaleString('default', {month: 'short'}) + ' ' + date.getFullYear();
+        if (!transactionFrequency[month]) {
+          transactionFrequency[month] = 0;
+        }
+        transactionFrequency[month] += 1;
+      });
+
+      // Prepare the data for the bar chart
+      const chartData = [['Month', 'Frequency']];
+      for (const [month, frequency] of Object.entries(transactionFrequency)) {
+        chartData.push([month, frequency]);
+      }
+
+      // Create the chart
+      const dataTable = google.visualization.arrayToDataTable(chartData);
+      const options = {
+        title: 'Transaction Frequency Per Month',
+        chartArea: {width: '50%'},
+        vAxis: {title: 'Frequency', minValue: 0},
+        hAxis: {title: 'Month'}
+      };
+      const chart = new google.visualization.ColumnChart(document.getElementById('bar-chart-2'));
       chart.draw(dataTable, options);
     }
 
@@ -140,11 +172,11 @@
         title: 'Amount Spent per Location per Month',
         isStacked: true,
         hAxis: {
-          title: 'Month',
+          title: 'Amount',
           minValue: 0
         },
         vAxis: {
-          title: 'Amount',
+          title: 'Location',
           minValue: 0
         }
       };
@@ -156,28 +188,41 @@
 
 <body>
   <div class="container">
-    <h1>Upload Dataset via URL</h1>
+    <div class="header-content">
+      <div class="header-logo">
+        <!-- Optionally, you can add a logo image as well -->
+        <img src="{{ url_for('static', filename='images/logo.jpeg') }}" alt="TechCore Solutions Logo" width="50"
+          height="50">
+      </div>
+      <h1 style="font-size: 50px;">TechCore Solutions</h1>
+    </div>
+
+    <h3 style="margin-top: 60px;">Upload Dataset via URL</h3>
     <form id="url-form">
-      <label for="url">Enter Dataset URL:</label>
-      <input type="url" id="url" name="url" required placeholder="https://example.com/dataset.csv">
+      <input type="url" id="url" name="url" required placeholder="https://example.com/dataset.json">
       <button type="submit">Upload Data</button>
     </form>
     <div id="response-message" class="response-message"></div>
 
-    <div class="container">
-      <h1>Transaction Visualizations</h1>
+    <h2 style="margin-top: 60px;">Transaction Visualizations</h2>
 
+    <div class="container" style="display: flex; justify-content: space-evenly;">
       <!-- Display the bar chart for amount spent per item -->
-      <div id="bar-chart" style="width: 900px; height: 500px;"></div>
+      <div id="bar-chart" style="width: 500px; height: 400px;"></div>
 
-      <!-- Display the pie chart for distribution of transactions by location -->
-      <div id="pie-chart" style="width: 900px; height: 500px;"></div>
-
-      <!-- Display the stacked bar chart for amount spent per location per month -->
-      <div id="stacked-bar-chart" style="width: 900px; height: 500px;"></div>
+      <div id="pie-chart" style="width: 300px; height: 400px;"></div>
     </div>
 
-    <h2>Transactions List</h2>
+    <!-- Display the stacked bar chart for amount spent per location per month -->
+    <div class="container" style="display: flex; justify-content: space-evenly;">
+      <div id="bar-chart-2" style="width: 400px; height: 400px;"></div>
+      <div id="stacked-bar-chart" style="width: 400px; height: 400px;"></div>
+    </div>
+
+    <div class="list-heading-container">
+      <h2>Transactions List</h2>
+      <button id="delete-button" type="submit">Delete Transactions</button>
+    </div>
 
     <!-- Transactions Table -->
     <table border="1">
@@ -264,7 +309,14 @@
           responseMessage.innerHTML = `<p style="color: red;">Error: ${error}</p>`;
         });
     });
+
+    // Add a click event listener to the button
+    document.getElementById("delete-button").addEventListener("click", function () {
+      fetch("/api/transactions/delete", {
+        method: "GET"
+      }).then(resp => location.reload(true))
+    });
+
   </script>
 </body>
-
 </html>
