@@ -1,7 +1,8 @@
 import os
+import psycopg2  # PostgreSQL connector
+import psycopg2.extras  # For RealDictCursor
 from flask import Flask, render_template, request, jsonify
 import requests
-import psycopg2  # PostgreSQL connector
 from io import StringIO
 from faker import Faker
 import math
@@ -37,7 +38,9 @@ def index():
 
         # Connect to PostgreSQL
         conn = get_db_connection()
-        cursor = conn.cursor(dictionary=True)
+        
+        # Use RealDictCursor to fetch rows as dictionaries
+        cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
         # Count the total number of records in the transactions table
         cursor.execute("SELECT COUNT(*) FROM transactions")
@@ -117,7 +120,9 @@ def upload_data():
 def get_all_transactions():
     try:
         conn = get_db_connection()
-        cursor = conn.cursor(dictionary=True)
+        
+        # Use RealDictCursor to fetch rows as dictionaries
+        cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
         # Query to fetch all transactions from the database
         cursor.execute("SELECT * FROM transactions")
@@ -137,7 +142,9 @@ def get_all_transactions():
 def get_transaction_by_id(transaction_id):
     try:
         conn = get_db_connection()
-        cursor = conn.cursor(dictionary=True)
+        
+        # Use RealDictCursor to fetch rows as dictionaries
+        cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
         # Query to fetch a transaction by its ID
         cursor.execute("SELECT * FROM transactions WHERE transaction_id = %s", (transaction_id,))
@@ -165,7 +172,9 @@ def get_transactions_by_range():
 
     try:
         conn = get_db_connection()
-        cursor = conn.cursor(dictionary=True)
+        
+        # Use RealDictCursor to fetch rows as dictionaries
+        cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
         # Query to fetch transactions within the date range
         cursor.execute(
